@@ -31,54 +31,79 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import kotlin.math.ceil
+import androidx.compose.foundation.layout.Arrangement
+
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.ui.Alignment // For Alignment.CenterHorizontally
+import androidx.compose.ui.unit.dp // For dp
 
 
-// ToDo 9: make this composable navigatable and then add a button to navigate to the GPA calculator
+
 @Composable
-fun PizzaPartyScreen( modifier: Modifier = Modifier) {
-    var totalPizzas by remember { mutableIntStateOf(0) }
+fun PizzaPartyScreen(navController: NavController) {
+    var totalPizzas by remember { mutableStateOf(0) }
     var numPeopleInput by remember { mutableStateOf("") }
     var hungerLevel by remember { mutableStateOf("Medium") }
 
     Column(
-        modifier = modifier.padding(10.dp)
+        modifier = Modifier
+            .padding(10.dp)
+            .fillMaxSize(), // Ensure it fills the available space
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
             text = "Pizza Party",
             fontSize = 38.sp,
-            modifier = modifier.padding(bottom = 16.dp)
+            modifier = Modifier.padding(bottom = 16.dp)
         )
+
+        // Number input field
         NumberField(
             labelText = "Number of people?",
             textInput = numPeopleInput,
             onValueChange = { numPeopleInput = it },
-            modifier = modifier.padding(bottom = 16.dp).fillMaxWidth()
+            modifier = Modifier.padding(bottom = 16.dp).fillMaxWidth()
         )
+
+        // Radio buttons for hunger level
         RadioGroup(
             labelText = "How hungry?",
             radioOptions = listOf("Light", "Medium", "Very hungry"),
             selectedOption = hungerLevel,
             onSelected = { hungerLevel = it },
-            modifier = modifier
+            modifier = Modifier.padding(bottom = 16.dp)
         )
+
+        // Display total pizzas
         Text(
             text = "Total pizzas: $totalPizzas",
             fontSize = 22.sp,
-            modifier = modifier.padding(top = 16.dp, bottom = 16.dp)
+            modifier = Modifier.padding(top = 16.dp, bottom = 16.dp)
         )
-        Button(
-            onClick = {            totalPizzas = calculateNumPizzas(numPeopleInput.toInt(),
-                hungerLevel)
 
+        // Calculate button
+        Button(
+            onClick = {
+                if (numPeopleInput.isNotEmpty()) {
+                    totalPizzas = calculateNumPizzas(numPeopleInput.toInt(), hungerLevel)
+                }
             },
-            modifier = modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth()
         ) {
             Text("Calculate")
         }
 
+        // Button to navigate to the GPA calculator screen
+        Button(
+            onClick = { navController.navigate("gpa_calculator_screen") },
+            modifier = Modifier.padding(top = 16.dp).fillMaxWidth()
+        ) {
+            Text("Go to GPA Calculator")
+        }
     }
 }
-
 @Composable
 fun NumberField(
     labelText: String,
@@ -86,15 +111,12 @@ fun NumberField(
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-
     TextField(
         value = textInput,
         onValueChange = onValueChange,
         label = { Text(labelText) },
         singleLine = true,
-        keyboardOptions = KeyboardOptions(
-            keyboardType = KeyboardType.Number
-        ),
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
         modifier = modifier
     )
 }
@@ -105,15 +127,15 @@ fun RadioGroup(
     radioOptions: List<String>,
     selectedOption: String,
     onSelected: (String) -> Unit,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     val isSelectedOption: (String) -> Boolean = { selectedOption == it }
 
-    Column {
+    Column(modifier = modifier) {
         Text(labelText)
         radioOptions.forEach { option ->
             Row(
-                modifier = modifier
+                modifier = Modifier
                     .selectable(
                         selected = isSelectedOption(option),
                         onClick = { onSelected(option) },
@@ -124,28 +146,20 @@ fun RadioGroup(
                 RadioButton(
                     selected = isSelectedOption(option),
                     onClick = null,
-                    modifier = modifier.padding(end = 8.dp)
+                    modifier = Modifier.padding(end = 8.dp)
                 )
-                Text(
-                    text = option,
-                    modifier = modifier.fillMaxWidth()
-                )
+                Text(text = option)
             }
         }
     }
 }
 
-
-fun calculateNumPizzas(
-    numPeople: Int,
-    hungerLevel: String
-): Int {
+fun calculateNumPizzas(numPeople: Int, hungerLevel: String): Int {
     val slicesPerPizza = 8
     val slicesPerPerson = when (hungerLevel) {
         "Light" -> 2
         "Medium" -> 3
         else -> 4
     }
-
     return ceil(numPeople * slicesPerPerson / slicesPerPizza.toDouble()).toInt()
 }

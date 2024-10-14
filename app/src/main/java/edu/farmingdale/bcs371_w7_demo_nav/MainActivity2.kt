@@ -3,6 +3,7 @@ package edu.farmingdale.bcs371_w7_demo_nav
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -31,18 +32,34 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import edu.farmingdale.bcs371_w7_demo_nav.ui.theme.BCS371_W7_Demo_NavTheme
+import androidx.compose.foundation.layout.width
+
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.NavController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 
 class MainActivity2 : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
+            val navController = rememberNavController() // Initialize NavController here
             BCS371_W7_Demo_NavTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    BasicOperations(
-                        name = "Activity 1",
+                    NavHost(
+                        navController = navController,
+                        startDestination = "basic_operations_screen", // Starting screen
                         modifier = Modifier.padding(innerPadding)
-                    )
+                    ) {
+                        composable("basic_operations_screen") {
+                            BasicOperations(navController = navController, name = "Activity 1")
+                        }
+                        composable("pizza_party_screen") {
+                            PizzaPartyScreen()
+                        }
+                    }
                 }
             }
         }
@@ -50,8 +67,25 @@ class MainActivity2 : ComponentActivity() {
 }
 
 @Composable
-fun BasicOperations(name: String, modifier: Modifier = Modifier) {
-    val  context = LocalContext.current
+fun gpaappFun() {
+    // Your content for Pizza Party Screen
+    Column(modifier = Modifier.fillMaxSize()) {
+        Text(text = "Testing")
+    }
+}
+
+@Composable
+fun PizzaPartyScreen() {
+    // Your content for Pizza Party Screen
+    Column(modifier = Modifier.fillMaxSize()) {
+        Text(text = "Welcome to the Pizza Party!")
+    }
+}
+
+@Composable
+fun BasicOperations(navController: NavController, name: String, modifier: Modifier = Modifier) {
+    val context = LocalContext.current
+    var isChecked by remember { mutableStateOf(true) }
 
     Column {
         Spacer(modifier = Modifier.padding(50.dp))
@@ -60,53 +94,61 @@ fun BasicOperations(name: String, modifier: Modifier = Modifier) {
             newInt.setData(Uri.parse("geo:0,0?q=Farmingdale State College, NY"))
             context.startActivity(newInt)
         },
-            modifier= Modifier.padding(start = 40.dp, end = 40.dp)) {
+            modifier= Modifier.padding(start = 40.dp, end = 40.dp),
+            enabled = isChecked) {
+
             Icon( imageVector = Icons.Default.LocationOn, contentDescription = "Location")
-            Text("Show me  Farmingdale")
+            Text("Show me Farmingdale")
         }
         HorizontalDivider(thickness = DividerDefaults.Thickness)
 
-        Button( onClick = {
-            val newInt = Intent(Intent.ACTION_VIEW)
-            // ToDo 1: create implicit intent to open a web page or call a phone number
-            context.startActivity(newInt)
-        },
-            modifier= Modifier.padding(start = 40.dp, end = 40.dp)) {
-            Icon( imageVector = Icons.Default.Phone, contentDescription = "Phone")
+        Button(
+            onClick = {
+                val phoneNumber = "tel:123456789" // Replace with the desired number
+                val newInt = Intent(Intent.ACTION_VIEW, Uri.parse(phoneNumber))
+                context.startActivity(newInt)
+            },
+            modifier = Modifier.padding(start = 40.dp, end = 40.dp),
+            enabled = isChecked // Enable/disable based on switch state
+        ) {
+            Icon(imageVector = Icons.Default.Phone, contentDescription = "Phone")
             Text("Call Me")
         }
 
         HorizontalDivider(thickness = DividerDefaults.Thickness)
 
-        Button( onClick = {
-            // ToDo 2: create explicit intent to open a new activity
-            context.startActivity(Intent(context, MainActivity::class.java))
-        },
-            modifier= Modifier.padding(start = 40.dp, end = 40.dp)) {
-            Icon( imageVector = Icons.Default.Info, contentDescription = "Phone")
-            Text("Go To activity 2")
+        Button(
+            onClick = {
+                Toast.makeText(context, "Navigating to Activity 2", Toast.LENGTH_SHORT).show()
+                context.startActivity(Intent(context, MainActivity2::class.java)) // Opens MainActivity2
+            },
+            modifier = Modifier.padding(start = 40.dp, end = 40.dp),
+            enabled = isChecked // Enable/disable based on switch state
+        ) {
+            Icon(imageVector = Icons.Default.Info, contentDescription = "Info")
+            Spacer(modifier = Modifier.width(10.dp))
+            Text("Go To Activity 2")
         }
 
-        // ToDo 3: Change the spacing between the icons and text to be 10dp
-        // ToDo 4: Add a horizontal divider between the buttons
+        HorizontalDivider(thickness = DividerDefaults.Thickness)
 
-
-        // ToDo 5: This switch is not working fix it
         Switch(
-            checked = true,
-            onCheckedChange = {  },
+            checked = isChecked,
+            onCheckedChange = { isChecked = it },
             modifier = Modifier.padding(10.dp),
         )
-        // ToDo 6: when the switch is off, disable the buttons
+
+
     }
-
-
 }
 
 @Preview(showBackground = true)
 @Composable
 fun BasicOperationsPreview() {
     BCS371_W7_Demo_NavTheme {
-        BasicOperations("Android")
+        // Pass a dummy NavController for preview purposes
+        val navController = rememberNavController()
+        BasicOperations(navController = navController, name = "Android")
     }
 }
+

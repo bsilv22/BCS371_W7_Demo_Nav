@@ -40,94 +40,104 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import kotlinx.coroutines.delay
 
-
 @Composable
 fun Navigation() {
-    val navController= rememberNavController()
-    NavHost(navController = navController, startDestination = "splash_screen"  ){
-        composable("splash_screen"
-        ) {
-            SpalshScreen(navController)
-
+    val navController = rememberNavController()
+    NavHost(navController = navController, startDestination = "splash_screen") {
+        composable("splash_screen") {
+            SplashScreen(navController)
         }
-
-        composable("first_screen"
-        ) {
+        composable("first_screen") {
             FirstScreen(navController)
-
         }
-
-
         composable("second_screen") {
             SecondScreen(navController)
         }
-
-        // ToDo 7: Add more nav screens here for the pizza party and gpa calculator
-
-
+        composable("pizza_party_screen") {
+            PizzaPartyScreen(navController)
+        }
+        composable("gpa_calculator_screen") {
+            GPAAppFun(navController)
+        }
     }
-
 }
 
 @Composable
 fun FirstScreen(navController: NavController) {
-    Box (contentAlignment = Alignment.Center){
-        Column ( modifier = Modifier.padding(horizontal = 20.dp).wrapContentSize(),
+    Box(contentAlignment = Alignment.Center) {
+        Column(
+            modifier = Modifier.padding(horizontal = 20.dp).wrapContentSize(),
             verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally){
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
             Text(text = "First Screen")
 
+            // Move the button for Pizza Party outside the other button
             Button(onClick = { navController.navigate("second_screen") }) {
-                Text(text ="Go to Second Screen")
+                Text(text = "Go to Second Screen")
             }
-
+            Button(onClick = { navController.navigate("pizza_party_screen") }) {
+                Text(text = "Go to Pizza Party")
+            }
+            Button(onClick = { navController.navigate("gpa_calculator_screen") }) {
+                Text(text = "Go to GPA Calculator")
+            }
         }
     }
 }
-
-
-
 
 @Composable
 fun SecondScreen(navController: NavController) {
+    var isChecked by remember { mutableStateOf(false) }
     var sliderValue by remember { mutableStateOf(0.5f) }
-
     val context = LocalContext.current
-    Column ( modifier = Modifier.padding(horizontal = 20.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally){
-        Slider(value = sliderValue, onValueChange = { sliderValue=it }, Modifier.fillMaxWidth())
 
-        Text (fontSize = 20.sp, text = "Second Screen")
+    Column(
+        modifier = Modifier.padding(horizontal = 20.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Slider(
+            value = sliderValue,
+            onValueChange = { sliderValue = it },
+            enabled = isChecked,
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Text(fontSize = 20.sp, text = "Second Screen")
 
         Button(onClick = { context.startActivity(Intent(context, MainActivity2::class.java)) }) {
-            Text(fontSize = 20.sp, text ="Go to other Activity")
+            Text(fontSize = 20.sp, text = "Go to Other Activity")
         }
 
-        // ToDo 8: when the switch is off, disable the slider
-        Checkbox(checked = true, onCheckedChange = {  }, modifier = Modifier.padding(10.dp))
-
+        // Checkbox to enable/disable the slider
+        Checkbox(
+            checked = isChecked,
+            onCheckedChange = { newValue -> isChecked = newValue },
+            modifier = Modifier.padding(10.dp)
+        )
     }
-
 }
 
 @Composable
-fun SpalshScreen(navController: NavController){
-    val scale= remember {
-        Animatable(0f, 1f)
-    }
+fun SplashScreen(navController: NavController) {
+    val scale = remember { Animatable(0f) }
     LaunchedEffect(key1 = true) {
         scale.animateTo(
             targetValue = 0.5f,
-            animationSpec = tween(durationMillis = 1000,0, easing = {
+            animationSpec = tween(durationMillis = 1000, easing = {
                 OvershootInterpolator(2f).getInterpolation(it)
-            }
-            ))
+            })
+        )
         delay(3000)
-        navController.navigate("first_screen")
+        navController.navigate("first_screen") {
+            popUpTo("splash_screen") { inclusive = true } // Remove splash from back stack
+        }
     }
 
-    Box (contentAlignment = Alignment.Center){
-        Image(painter = painterResource(id = R.drawable.fsclogo), contentDescription ="" )
+    Box(contentAlignment = Alignment.Center) {
+        Image(painter = painterResource(id = R.drawable.fsclogo), contentDescription = "")
     }
 }
+
+
