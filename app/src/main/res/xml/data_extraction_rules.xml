@@ -7,7 +7,7 @@
     <cloud-backup>
         <include domain="file" path="files/gpa.txt"/>
         <include domain="file" path="files/grades.txt"/>
-
+        <include domain="file" path="files/totalPizzas.txt"/>
 
 
     </cloud-backup>
